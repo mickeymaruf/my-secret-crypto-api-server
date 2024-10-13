@@ -48,7 +48,11 @@ const handlePaint = async (webAppData) => {
   try {
     const { data } = await axios.post(
       "https://notpx.app/api/v1/repaint/start",
-      getRandomPixelData(),
+      // getRandomPixelData(),
+      {
+        pixelId: 590949,
+        newColor: "#000000",
+      },
       {
         headers: {
           Authorization: `initData ${webAppData}`,
