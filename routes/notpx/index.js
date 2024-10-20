@@ -26,7 +26,9 @@ const claimMining = async (webAppData) => {
     });
 
     return data;
-  } catch (error) {}
+  } catch (error) {
+    console.log(error.response?.data);
+  }
 };
 
 const getStatus = async (webAppData) => {
@@ -39,20 +41,17 @@ const getStatus = async (webAppData) => {
 
     return data;
   } catch (error) {
-    console.log(error);
+    console.log(error.response?.data);
     throw new Error("Fetching status failed");
   }
 };
 
-const handlePaint = async (webAppData) => {
+const handlePaint = async (webAppData, payload) => {
   try {
     const { data } = await axios.post(
       "https://notpx.app/api/v1/repaint/start",
       // getRandomPixelData(),
-      {
-        pixelId: 590949,
-        newColor: "#000000",
-      },
+      payload,
       {
         headers: {
           Authorization: `initData ${webAppData}`,
@@ -62,7 +61,7 @@ const handlePaint = async (webAppData) => {
 
     return data;
   } catch (error) {
-    console.log(error);
+    console.log(error.response?.data);
     throw new Error("Painting failed");
   }
 };
@@ -91,9 +90,10 @@ router.get("/paint", async (req, res) => {
 
     if (status?.charges) {
       for (let i = 1; i <= status?.charges; i++) {
-        try {
-          await handlePaint(webAppData);
-        } catch (error) {}
+        await handlePaint(webAppData, {
+          pixelId: 933347,
+          newColor: "#3690EA",
+        });
       }
     }
 
@@ -103,19 +103,23 @@ router.get("/paint", async (req, res) => {
       claimed,
     });
   } catch (error) {
-    res.send(error);
+    res.send({ error: error.response?.data });
   }
 });
 
 router.get("/paint/all", async (req, res) => {
   try {
-    const users = await usersCollection.find().project({ query: 0 }).toArray();
+    const usersData = await usersCollection
+      .find()
+      .project({ query: 0 })
+      .toArray();
+    const users = usersData.slice(1, -3);
 
     const results = await Promise.allSettled(
       users.map(async (user) => {
         const sessionString = process.env[user.username];
 
-        if (!sessionString || user.username === "mickeymaruf") {
+        if (!sessionString) {
           return {
             user: user.username,
             error: "User session not found.",
@@ -132,23 +136,19 @@ router.get("/paint/all", async (req, res) => {
 
           const status = await getStatus(webAppData);
           const userBalance = Math.floor(status?.userBalance);
-          const charges = status?.charges || 0;
 
-          let paintsPainted = 0;
-          for (let i = 1; i <= charges; i++) {
-            try {
-              await handlePaint(webAppData);
-              paintsPainted++;
-            } catch (error) {
-              console.log(
-                `Error painting for user ${user.username}: ${error.message}`
-              );
+          if (status?.charges) {
+            for (let i = 1; i <= status?.charges; i++) {
+              await handlePaint(webAppData, {
+                pixelId: 590949,
+                newColor: "#000000",
+              });
             }
           }
 
           return {
             user: user.username,
-            success: `${paintsPainted} paints painted!`,
+            success: `${status?.charges || 0} paints painted!`,
             balance: userBalance,
             claimed,
           };
@@ -176,7 +176,7 @@ router.get("/paint/all", async (req, res) => {
       failedResults,
     });
   } catch (error) {
-    res.send(error);
+    res.send({ error: error.response?.data });
   }
 });
 

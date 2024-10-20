@@ -1,21 +1,21 @@
 const { TelegramClient } = require("telegram");
-const { getSession, saveUserSession } = require("./sessions");
 const {
   getPhoneNumber,
   getPassword,
   getPhoneCode,
   closeInput,
 } = require("./inputHandler");
+const { StringSession } = require("telegram/sessions");
 require("dotenv").config();
 
 const apiId = +process.env.API_ID;
 const apiHash = process.env.API_HASH;
 
 (async () => {
-  console.log("Loading interactive example...");
+  console.log("Creating a new session...");
 
   const phoneNumber = await getPhoneNumber();
-  const stringSession = getSession(phoneNumber);
+  const stringSession = new StringSession(""); // Start with an empty session string
 
   const client = new TelegramClient(stringSession, apiId, apiHash, {
     connectionRetries: 5,
@@ -28,10 +28,7 @@ const apiHash = process.env.API_HASH;
     onError: (err) => console.log(err),
   });
 
-  console.log("You should now be connected.");
-
-  // Save the new or updated session
-  saveUserSession(phoneNumber, client.session.save());
+  console.log("New session created:", client.session.save()); // Print new session to the terminal
 
   await client.disconnect();
   closeInput();
