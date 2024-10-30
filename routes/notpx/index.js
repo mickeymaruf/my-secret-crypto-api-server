@@ -66,6 +66,21 @@ const handlePaint = async (webAppData, payload) => {
   }
 };
 
+const pixelIds = [847700, 845696, 853702, 853700, 853713, 869714];
+const randomizePixel = () => {
+  let lastPixelId = null;
+
+  function getRandomPixelId() {
+    let randomPixelId;
+    do {
+      randomPixelId = pixelIds[Math.floor(Math.random() * pixelIds.length)];
+    } while (randomPixelId === lastPixelId);
+
+    lastPixelId = randomPixelId;
+    return randomPixelId;
+  }
+};
+
 // database
 const db = client.db("blum");
 const usersCollection = db.collection("users");
@@ -91,8 +106,8 @@ router.get("/paint", async (req, res) => {
     if (status?.charges) {
       for (let i = 1; i <= status?.charges; i++) {
         await handlePaint(webAppData, {
-          pixelId: 933347,
-          newColor: "#3690EA",
+          pixelId: randomizePixel(),
+          newColor: "#FFD635",
         });
       }
     }
@@ -140,8 +155,8 @@ router.get("/paint/all", async (req, res) => {
           if (status?.charges) {
             for (let i = 1; i <= status?.charges; i++) {
               await handlePaint(webAppData, {
-                pixelId: 590949,
-                newColor: "#000000",
+                pixelId: randomizePixel(),
+                newColor: "#FFD635",
               });
             }
           }
