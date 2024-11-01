@@ -66,20 +66,18 @@ const handlePaint = async (webAppData, payload) => {
   }
 };
 
-const pixelIds = [847700, 845696, 853702, 853700, 853713, 869714];
-const randomizePixel = () => {
-  let lastPixelId = null;
+const pixelIds = [847700, 845696, 853702, 853700, 853713, 869714, 131147];
+let lastPixelId = null;
 
-  function getRandomPixelId() {
-    let randomPixelId;
-    do {
-      randomPixelId = pixelIds[Math.floor(Math.random() * pixelIds.length)];
-    } while (randomPixelId === lastPixelId);
+function getRandomPixelId() {
+  let randomPixelId;
+  do {
+    randomPixelId = pixelIds[Math.floor(Math.random() * pixelIds.length)];
+  } while (randomPixelId === lastPixelId);
 
-    lastPixelId = randomPixelId;
-    return randomPixelId;
-  }
-};
+  lastPixelId = randomPixelId;
+  return randomPixelId;
+}
 
 // database
 const db = client.db("blum");
@@ -106,7 +104,7 @@ router.get("/paint", async (req, res) => {
     if (status?.charges) {
       for (let i = 1; i <= status?.charges; i++) {
         await handlePaint(webAppData, {
-          pixelId: randomizePixel(),
+          pixelId: getRandomPixelId(),
           newColor: "#FFD635",
         });
       }
@@ -154,8 +152,10 @@ router.get("/paint/all", async (req, res) => {
 
           if (status?.charges) {
             for (let i = 1; i <= status?.charges; i++) {
+              console.log(getRandomPixelId());
+
               await handlePaint(webAppData, {
-                pixelId: randomizePixel(),
+                pixelId: getRandomPixelId(),
                 newColor: "#FFD635",
               });
             }
